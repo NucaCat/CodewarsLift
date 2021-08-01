@@ -29,18 +29,14 @@ namespace Codewars
             var queues = new []
             {
                 new int[]{}, // G
-                new int[]{}, // 1
-                new int[0], // 2
+                new int[]{2}, // 1
+                new int[]{3,3,3}, // 2
                 new int[]{1}, // 3
-                new int[]{3, 6}, // 4
-                new int[0], // 5
-                new int[]{2}, // 6
+                new int[]{}, // 4
+                new int[]{}, // 5
+                new int[]{}, // 6
             };
-            var a = TheLift(queues, 5);
-            foreach (var i in a)
-            {
-                Console.Write(i);
-            }
+            var a = TheLift(queues, 1);
         }
 
         public static int[] TheLift(int[][] queues, int capacity)
@@ -114,8 +110,6 @@ namespace Codewars
 
         public int[] Operate()
         {
-            QueuesLog();
-            
             while (!(_queues.All(u => u == null || u.Length == 0) && _numberOfPeople == 0))
             {
                 if (!NeedToStop())
@@ -138,41 +132,7 @@ namespace Codewars
             if (_floorLog.Last() != 0)
                 _floorLog.Add(0);
 
-            FloorLog();
             return _floorLog.ToArray();
-        }
-
-        private void FloorLog()
-        {
-            Console.WriteLine("floor log");
-            foreach (var i in _floorLog)
-            {
-                Console.Write(i);
-            }
-        }
-
-        private void QueuesLog()
-        {
-            int index = 0;
-            Console.WriteLine($"capacity {_capacity.ToString()}");
-            foreach (var queue in _queues)
-            {
-                Console.Write(index);
-                Console.Write(" ");
-                if (queue.Length == 0)
-                    Console.Write("empty");
-                else
-                {
-                    foreach (var person in queue)
-                    {
-                        Console.Write(person);
-                    }
-                }
-
-                Console.WriteLine();
-
-                index++;
-            }
         }
 
         private void ChangeDirection()
@@ -198,14 +158,6 @@ namespace Codewars
                     return;
                 }
 
-                if (_isEmpty && _currentFloor != _minFloor && IsAnyPersonInDirectionWantsToEnter())
-                {
-                    _currentFloor = FloorInDirectionWantsToEnter();
-
-                    ChangeDirection();
-                    return;
-                }
-
                 --_currentFloor;
             }
 
@@ -217,69 +169,8 @@ namespace Codewars
                     return;
                 }
 
-                if (_isEmpty && _currentFloor != _maxFloor && IsAnyPersonInDirectionWantsToEnter())
-                {
-                    _currentFloor = FloorInDirectionWantsToEnter();
-
-                    ChangeDirection();
-                    return;
-                }
-
                 ++_currentFloor;
             }
-        }
-
-        private bool IsAnyPersonInDirectionWantsToEnter()
-        {
-            if (_currentDirection == CurrentDirection.Down)
-                return _queues.Take(_currentFloor)
-                    .Any(AnyPeopleOnFloorWantsToGoUp);
-        
-            if (_currentDirection == CurrentDirection.Up)
-                return _queues.Skip(_currentFloor + 1)
-                    .Any(AnyPeopleOnFloorWantsToGoDown);
-        
-            throw new Exception();
-        }
-
-        private bool AnyPeopleOnFloorWantsToGoDown(int[] queue)
-            => queue.Any(destination => destination < IndexOfQueue(queue));
-
-        private bool AnyPeopleOnFloorWantsToGoUp(int[] queue)
-            => queue.Any(destination => destination > IndexOfQueue(queue));
-
-        private int FloorInDirectionWantsToEnter()
-        {
-            if (_currentDirection == CurrentDirection.Down)
-            {
-                foreach (var queue in _queues.Take(_currentFloor))
-                {
-                    if (AnyPeopleOnFloorWantsToGoUp(queue))
-                        return IndexOfQueue(queue);
-                }
-            }
-        
-            if (_currentDirection == CurrentDirection.Up)
-            {
-                foreach (var queue in _queues.Skip(_currentFloor + 1).Reverse())
-                {
-                    if (AnyPeopleOnFloorWantsToGoDown(queue))
-                        return IndexOfQueue(queue);
-                }
-            }
-        
-            throw new Exception();
-        }
-
-        private int IndexOfQueue(int[] queue)
-        {
-            for (int i = 0; i < _maxFloor + 1; i++)
-            {
-                if (_queues[i] == queue)
-                    return i;
-            }
-
-            throw new Exception();
         }
     }
 }
