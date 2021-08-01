@@ -195,7 +195,7 @@ namespace Codewars
         private bool IsAnyPersonInDirectionWantsToEnter()
         {
             if (_currentDirection == CurrentDirection.Down)
-                return _queues.Take(_currentFloor - 1)
+                return _queues.Take(_currentFloor)
                     .Any(AnyPeopleOnFloorWantsToGoUp);
         
             if (_currentDirection == CurrentDirection.Up)
@@ -236,7 +236,7 @@ namespace Codewars
 
         private int IndexOfQueue(int[] queue)
         {
-            for (int i = 0; i < _maxFloor; i++)
+            for (int i = 0; i < _maxFloor + 1; i++)
             {
                 if (_queues[i] == queue)
                     return i;
