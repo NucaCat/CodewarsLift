@@ -28,13 +28,13 @@ namespace Codewars
 
             var queues = new []
             {
-                new int[0], // G
-                new int[0], // 1
+                new int[]{}, // G
+                new int[]{}, // 1
                 new int[0], // 2
-                new int[1], // 3
-                new int[3], // 4
+                new int[]{1}, // 3
+                new int[]{3, 6}, // 4
                 new int[0], // 5
-                new int[2], // 6
+                new int[]{2}, // 6
             };
             var a = TheLift(queues, 5);
             foreach (var i in a)
@@ -114,6 +114,8 @@ namespace Codewars
 
         public int[] Operate()
         {
+            QueuesLog();
+            
             while (!(_queues.All(u => u == null || u.Length == 0) && _numberOfPeople == 0))
             {
                 if (!NeedToStop())
@@ -122,8 +124,9 @@ namespace Codewars
 
                     continue;
                 }
-                
-                _floorLog.Add(_currentFloor);
+
+                if (_floorLog.Last() != _currentFloor)
+                    _floorLog.Add(_currentFloor);
                 
                 Exit();
 
@@ -135,7 +138,40 @@ namespace Codewars
             if (_floorLog.Last() != 0)
                 _floorLog.Add(0);
 
+            FloorLog();
             return _floorLog.ToArray();
+        }
+
+        private void FloorLog()
+        {
+            Console.WriteLine("floor log");
+            foreach (var i in _floorLog)
+            {
+                Console.Write(i);
+            }
+        }
+
+        private void QueuesLog()
+        {
+            int index = 0;
+            foreach (var queue in _queues)
+            {
+                Console.Write(index);
+                Console.Write(" ");
+                if (queue.Length == 0)
+                    Console.Write("empty");
+                else
+                {
+                    foreach (var person in queue)
+                    {
+                        Console.Write(person);
+                    }
+                }
+
+                Console.WriteLine();
+
+                index++;
+            }
         }
 
         private void ChangeDirection()
