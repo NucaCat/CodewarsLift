@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Codewars
 {
@@ -9,15 +8,33 @@ namespace Codewars
     {
         static void Main(string[] args)
         {
-            int[][] queues =
+            // int[][] queues =
+            // {
+            //     new int[0], // G
+            //     new int[]{0}, // 1
+            //     new int[0], // 2
+            //     new int[0], // 3
+            //     new int[]{2}, // 4
+            //     new int[]{3}, // 5
+            //     new int[0], // 6
+            // };
+            // var a = TheLift(queues, 5);
+            // foreach (var i in a)
+            // {
+            //     Console.Write(i);
+            // }
+            //
+            // Console.WriteLine();
+
+            var queues = new []
             {
                 new int[0], // G
-                new int[]{0}, // 1
+                new int[0], // 1
                 new int[0], // 2
-                new int[0], // 3
-                new int[]{2}, // 4
-                new int[]{3}, // 5
-                new int[0], // 6
+                new int[1], // 3
+                new int[3], // 4
+                new int[0], // 5
+                new int[2], // 6
             };
             var a = TheLift(queues, 5);
             foreach (var i in a)
@@ -55,29 +72,34 @@ namespace Codewars
         private int _maxFloor => _queues.Length - 1;
         private int _minFloor = 0;
         private int _numberOfPeople => _currentPeople.Count;
+        private bool _isEmpty => _numberOfPeople == 0;
 
-        private List<int> _currentPeople = new(100);
-        private List<int> _floorLog = new(new []{0});
+        private List<int> _currentPeople = new List<int>(100);
+        private List<int> _floorLog = new List<int>(new []{0});
 
         private int _currentFloor = 0;
 
         private void Enter()
         {
-            var currentQueue = _queues[_currentFloor];
+            var numberOfPeople = _numberOfPeople;
+            for (int i = 0; i < _capacity - numberOfPeople; i++)
+            {
+                var currentQueue = _queues[_currentFloor];
 
-            if (_currentDirection == CurrentDirection.Up
-                ? !currentQueue.Any(u => u > _currentFloor)
-                : !currentQueue.Any(u => u < _currentFloor))
-                return;
+                if (_currentDirection == CurrentDirection.Up
+                    ? !currentQueue.Any(u => u > _currentFloor)
+                    : !currentQueue.Any(u => u < _currentFloor))
+                    return;
 
-            var personToEnter = _currentDirection == CurrentDirection.Up
-                ? currentQueue.First(u => u > _currentFloor)
-                : currentQueue.First(u => u < _currentFloor);
+                var personToEnter = _currentDirection == CurrentDirection.Up
+                    ? currentQueue.First(u => u > _currentFloor)
+                    : currentQueue.First(u => u < _currentFloor);
             
-            _currentPeople.Add(personToEnter);
+                _currentPeople.Add(personToEnter);
 
-            int indexOfPersonInQueue = Array.IndexOf(currentQueue, personToEnter);
-            _queues[_currentFloor] = currentQueue.Where((_, index) => index != indexOfPersonInQueue).ToArray();
+                int indexOfPersonInQueue = Array.IndexOf(currentQueue, personToEnter);
+                _queues[_currentFloor] = currentQueue.Where((_, index) => index != indexOfPersonInQueue).ToArray();
+            }
         }
 
         /// <summary>
@@ -96,10 +118,8 @@ namespace Codewars
             {
                 if (!NeedToStop())
                 {
-                    if (_currentFloor == _minFloor)
-                    {
-                        MoveNextFloor();
-                    }
+                    MoveNextFloor();
+
                     continue;
                 }
                 
@@ -107,14 +127,13 @@ namespace Codewars
                 
                 Exit();
 
-                var numberOfPeople = _numberOfPeople;
-                for (int i = 0; i < _capacity - numberOfPeople; i++)
-                    Enter();
+                Enter();
 
                 MoveNextFloor();
             }
             
-            _floorLog.Add(0);
+            if (_floorLog.Last() != 0)
+                _floorLog.Add(0);
 
             return _floorLog.ToArray();
         }
@@ -138,45 +157,82 @@ namespace Codewars
             {
                 if (_currentFloor - 1 < _minFloor)
                 {
-                    ChangeDirection(); // problem here
+                    ChangeDirection();
+                    return;
+                }
+
+                if (_isEmpty && _currentFloor != _minFloor && IsAnyPersonInDirectionWantsToEnter())
+                {
+                    _currentFloor = FloorInDirectionWantsToEnter();
+
+                    ChangeDirection();
                     return;
                 }
 
                 --_currentFloor;
-
-                // if (IsAnyPersonInDirectionWantsToEnter())
-                // {
-                //     --_currentFloor;
-                // }
             }
 
             if (_currentDirection == CurrentDirection.Up)
             {
                 if (_currentFloor + 1 > _maxFloor)
                 {
-                    ChangeDirection(); // problem here
+                    ChangeDirection();
+                    return;
+                }
+
+                if (_isEmpty && _currentFloor != _maxFloor && IsAnyPersonInDirectionWantsToEnter())
+                {
+                    _currentFloor = FloorInDirectionWantsToEnter();
+
+                    ChangeDirection();
                     return;
                 }
 
                 ++_currentFloor;
-
-                // if (IsAnyPersonInDirectionWantsToEnter())
-                // {
-                //     ++_currentFloor;
-                // }
             }
         }
 
-        // private bool IsAnyPersonInDirectionWantsToEnter()
-        // {
-        //     if (_currentDirection == CurrentDirection.Down)
-        //         return _queues.Take(_currentFloor - 1).Any(u => u.Any(destination => destination > IndexOfQueue(u)));
-        //
-        //     if (_currentDirection == CurrentDirection.Up)
-        //         return _queues.Skip(_currentFloor + 1).Any(u => u.Any(destination => destination < IndexOfQueue(u)));
-        //
-        //     throw new Exception();
-        // }
+        private bool IsAnyPersonInDirectionWantsToEnter()
+        {
+            if (_currentDirection == CurrentDirection.Down)
+                return _queues.Take(_currentFloor - 1)
+                    .Any(AnyPeopleOnFloorWantsToGoUp);
+        
+            if (_currentDirection == CurrentDirection.Up)
+                return _queues.Skip(_currentFloor + 1)
+                    .Any(AnyPeopleOnFloorWantsToGoDown);
+        
+            throw new Exception();
+        }
+
+        private bool AnyPeopleOnFloorWantsToGoDown(int[] queue)
+            => queue.Any(destination => destination < IndexOfQueue(queue));
+
+        private bool AnyPeopleOnFloorWantsToGoUp(int[] queue)
+            => queue.Any(destination => destination > IndexOfQueue(queue));
+
+        private int FloorInDirectionWantsToEnter()
+        {
+            if (_currentDirection == CurrentDirection.Down)
+            {
+                foreach (var queue in _queues.Take(_currentFloor))
+                {
+                    if (AnyPeopleOnFloorWantsToGoUp(queue))
+                        return IndexOfQueue(queue);
+                }
+            }
+        
+            if (_currentDirection == CurrentDirection.Up)
+            {
+                foreach (var queue in _queues.Skip(_currentFloor + 1).Reverse())
+                {
+                    if (AnyPeopleOnFloorWantsToGoDown(queue))
+                        return IndexOfQueue(queue);
+                }
+            }
+        
+            throw new Exception();
+        }
 
         private int IndexOfQueue(int[] queue)
         {
