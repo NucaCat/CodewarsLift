@@ -154,6 +154,7 @@ namespace Codewars
         private void QueuesLog()
         {
             int index = 0;
+            Console.WriteLine($"capacity {_capacity.ToString()}");
             foreach (var queue in _queues)
             {
                 Console.Write(index);
